@@ -5,7 +5,10 @@
 //  Copyright 2012 Brooklyn Computer Club. All rights reserved.
 //
 
+
+#if TARGET_OS_IPHONE
 #import <UIKit/UIKit.h>
+#endif
 
 
 @interface BCCNetworkActivityIndicator : NSObject {
