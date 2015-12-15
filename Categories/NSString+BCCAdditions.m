@@ -90,10 +90,12 @@
 
 #pragma mark Templating
 
-- (NSString *)BCC_stringByParsingTagsWithStartDelimeter:(NSString *)inStartDelimiter endDelimeter:(NSString *)inEndDelimiter usingObject:(id)object;
+- (NSString *)BCC_stringByParsingTagsWithStartDelimeter:(NSString *)inStartDelimiter endDelimeter:(NSString *)inEndDelimiter usingObject:(id)object
 {
     NSScanner *scanner = [NSScanner scannerWithString:self];
     NSMutableString *result = [[NSMutableString alloc] init];
+    
+    NSString *arrayDelimeter = @"[]";
     
     [scanner setCharactersToBeSkipped:nil];
     
@@ -107,11 +109,44 @@
         
         if ([scanner scanString:inStartDelimiter intoString:nil]) {
             if ([scanner scanString:inEndDelimiter intoString:nil]) {
+                // Empty tag, skip
                 continue;
-            } else if ([scanner scanUpToString:inEndDelimiter intoString:&tag] && [scanner scanString:inEndDelimiter intoString:nil]) {
+            } else {
+                NSString *subtemplateString = nil;
+                
+                // See if this is intended to be a subtemplate
+                if ([scanner scanString:@"[[" intoString:nil]) {
+                    if ([scanner scanUpToString:@":" intoString:&tag] && [scanner scanString:@":" intoString:nil]) {
+                        [scanner scanUpToString:@"]]" intoString:&subtemplateString];
+                        [scanner scanString:@"]]" intoString:nil];
+                        [scanner scanUpToString:inEndDelimiter intoString:nil];
+                        [scanner scanString:inEndDelimiter intoString:nil];
+                    }
+                } else if ([scanner scanUpToString:inEndDelimiter intoString:&tag] && [scanner scanString:inEndDelimiter intoString:nil]) {
+                    
+                }
+                
                 id keyValue = [object valueForKeyPath:[tag stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
+                if (!keyValue) {
+                    [result appendString:@""];
+                    continue;
+                }
+
+                __block NSMutableString *resultValue = nil;
+                
+                if ([keyValue isKindOfClass:[NSArray class]] && subtemplateString) {
+                    resultValue = [[NSMutableString alloc] init];
+                    
+                    [(NSArray *)keyValue enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                        NSString *currentSubtemplateResult = [subtemplateString BCC_stringByParsingTagsWithStartDelimeter:inStartDelimiter endDelimeter:inEndDelimiter usingObject:obj];
+                        [resultValue appendString:currentSubtemplateResult];
+                    }];
+                } else {
+                    resultValue = keyValue;
+                }
+                
                 if (keyValue) {
-                    [result appendFormat:@"%@", keyValue];
+                    [result appendFormat:@"%@", resultValue];
                 } else {
                     [result appendString:@""];
                 }
