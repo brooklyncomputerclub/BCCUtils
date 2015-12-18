@@ -8,6 +8,9 @@
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
+#if TARGET_OS_IPHONE
+#import <UIKit/UIKit.h>
+#endif
 
 @interface NSManagedObject (STAdditions)
 
