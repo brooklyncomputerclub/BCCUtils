@@ -7,6 +7,8 @@
 
 #import "UIColor+BCCAdditions.h"
 
+#if TARGET_OS_IPHONE
+
 @implementation UIColor (BCCAdditions)
 
 + (UIColor *)BCC_colorFromHexString:(NSString *)hexString
@@ -23,3 +25,5 @@
 }
 
 @end
+
+#endif

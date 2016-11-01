@@ -7,6 +7,7 @@
 
 #import "BCCNetworkActivityIndicator.h"
 
+#if TARGET_OS_IPHONE
 
 @implementation BCCNetworkActivityIndicator
 
@@ -47,3 +48,5 @@
 }
 
 @end
+
+#endif
